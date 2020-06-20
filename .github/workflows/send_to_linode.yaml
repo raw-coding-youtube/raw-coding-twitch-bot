@@ -27,6 +27,6 @@ jobs:
           mkdir ~/.ssh
           echo "$my_ssh_key" > ~/.ssh/gh_actions_key
           chmod 600 ~/.ssh/gh_actions_key
-          rsync -avz -e "ssh -i ~/.ssh/gh_actions_key -o StrictHostKeyChecking=no" ./MoistBot/bin/Release/netcoreapp3.1 gh_actions@178.79.157.25:/var/app
+          rsync -avz -e "ssh -i ~/.ssh/gh_actions_key -o StrictHostKeyChecking=no" ./MoistBot/bin/Release/netcoreapp3.1/* gh_actions@178.79.157.25:/var/app
         env:
           my_ssh_key: ${{ secrets.LINODE_UPLOAD }}
