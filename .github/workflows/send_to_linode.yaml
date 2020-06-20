@@ -18,7 +18,15 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --configuration Release --no-restore
-      - uses: actions/upload-artifact@v2
-        with:
-          name: my-artifact
-          path: ./MoistBot/bin/Release/netcoreapp3.1
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: my-artifact
+#          path: ./MoistBot/bin/Release/netcoreapp3.1
+      - name: Push To Linode
+        run: |
+          mkdir ~/.ssh
+          echo "$my_ssh_key" > ~/.ssh/gh_actions_key
+          chmod 600 ~/.ssh/gh_actions_key
+          rsync -avz -e "ssh -i ~/.ssh/gh_actions_key -o StrictHostKeyChecking=no" public/ gh_action@178.79.157.25:/var/app
+        env:
+          my_ssh_key: ${{ secrets.LINODE_UPLOAD }}
