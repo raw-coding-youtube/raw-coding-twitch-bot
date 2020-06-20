@@ -12,9 +12,13 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.101
-      - name: Setup Linode
-        run: pip3 install linode-cli --upgrade
+#      - name: Setup Linode
+#        run: pip3 install linode-cli --upgrade
       - name: Install dependencies
         run: dotnet restore
       - name: Build
         run: dotnet build --configuration Release --no-restore
+      - uses: actions/upload-artifact@v2
+        with:
+          name: my-artifact
+          path: ./MoistBot/bin/Release/netcoreapp3.1
