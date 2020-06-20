@@ -22,6 +22,8 @@ jobs:
 #        with:
 #          name: my-artifact
 #          path: ./MoistBot/bin/Release/netcoreapp3.1
+      - name: Move Systemd service
+        run: mv ./scripts/* ./MoistBot/bin/Release/netcoreapp3.1/
       - name: Push To Linode
         run: |
           mkdir ~/.ssh
