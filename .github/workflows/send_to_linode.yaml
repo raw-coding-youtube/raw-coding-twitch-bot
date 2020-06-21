@@ -24,6 +24,13 @@ jobs:
 #          path: ./MoistBot/bin/Release/netcoreapp3.1
       - name: Move Systemd service
         run: mv ./scripts/* ./MoistBot/bin/Release/netcoreapp3.1/
+      - name: Update Json Secrets
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: 'appsettings.Production.json'
+        env:
+          TwitchSettings.ClientId: ${{ secrets.TWITCH_CLIENT_ID }}
+          TwitchSettings.ClientSecret: ${{ secrets.TWITCH_CLIENT_SECRET }}
       - name: Push To Linode
         run: |
           mkdir ~/.ssh
