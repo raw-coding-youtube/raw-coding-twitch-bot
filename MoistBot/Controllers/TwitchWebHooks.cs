@@ -19,8 +19,14 @@ namespace MoistBot.Controllers
             _logger = logger;
         }
 
+        [HttpGet]
+        public string Index()
+        {
+            return Request.Query.TryGetValue("hub.challenge", out var v) ? v.ToString() : "";
+        }
+
         [HttpPost]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Receive()
         {
             using var reader = new StreamReader(Request.Body, Encoding.UTF8);
             var payload = await reader.ReadToEndAsync();
