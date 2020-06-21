@@ -27,7 +27,7 @@ jobs:
       - name: Update Json Secrets
         uses: microsoft/variable-substitution@v1
         with:
-          files: 'appsettings.Production.json'
+          files: './MoistBot/bin/Release/netcoreapp3.1/appsettings.Production.json'
         env:
           TwitchSettings.ClientId: ${{ secrets.TWITCH_CLIENT_ID }}
           TwitchSettings.ClientSecret: ${{ secrets.TWITCH_CLIENT_SECRET }}
