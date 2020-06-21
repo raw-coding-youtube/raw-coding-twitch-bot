@@ -2,7 +2,6 @@
 
 on: push
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,22 +11,16 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.101
-#      - name: Setup Linode
-#        run: pip3 install linode-cli --upgrade
       - name: Install dependencies
         run: dotnet restore
       - name: Build
-        run: dotnet build --configuration Release --no-restore
-#      - uses: actions/upload-artifact@v2
-#        with:
-#          name: my-artifact
-#          path: ./MoistBot/bin/Release/netcoreapp3.1
+        run: dotnet publish -c Release --no-restore
       - name: Move Systemd service
-        run: mv ./scripts/* ./MoistBot/bin/Release/netcoreapp3.1/
+        run: mv ./scripts/* ./MoistBot/bin/Release/netcoreapp3.1/publish/
       - name: Update Json Secrets
         uses: microsoft/variable-substitution@v1
         with:
-          files: './MoistBot/bin/Release/netcoreapp3.1/appsettings.Production.json'
+          files: './MoistBot/bin/Release/netcoreapp3.1/publish/appsettings.Production.json'
         env:
           TwitchSettings.ClientId: ${{ secrets.TWITCH_CLIENT_ID }}
           TwitchSettings.ClientSecret: ${{ secrets.TWITCH_CLIENT_SECRET }}
@@ -36,6 +29,6 @@ jobs:
           mkdir ~/.ssh
           echo "$my_ssh_key" > ~/.ssh/gh_actions_key
           chmod 600 ~/.ssh/gh_actions_key
-          rsync -avz -e "ssh -i ~/.ssh/gh_actions_key -o StrictHostKeyChecking=no" ./MoistBot/bin/Release/netcoreapp3.1/* gh_actions@178.79.157.25:/var/app
+          rsync -avz -e "ssh -i ~/.ssh/gh_actions_key -o StrictHostKeyChecking=no" ./MoistBot/bin/Release/netcoreapp3.1/publish/* gh_actions@178.79.157.25:/var/app
         env:
           my_ssh_key: ${{ secrets.LINODE_UPLOAD }}
