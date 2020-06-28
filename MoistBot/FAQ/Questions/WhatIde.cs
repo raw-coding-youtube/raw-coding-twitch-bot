@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace TwitchBot.FAQ.Questions
+namespace MoistBot.FAQ.Questions
 {
     public class WhatIde : IQuestionable
     {

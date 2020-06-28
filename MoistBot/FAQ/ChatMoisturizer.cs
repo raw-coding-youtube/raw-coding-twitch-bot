@@ -5,7 +5,7 @@ using System.Reflection;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 
-namespace TwitchBot.FAQ
+namespace MoistBot.FAQ
 {
     public class ChatMoisturizer
     {

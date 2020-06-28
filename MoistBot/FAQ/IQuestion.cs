@@ -1,4 +1,4 @@
-﻿namespace TwitchBot.FAQ
+﻿namespace MoistBot.FAQ
 {
     public interface IQuestionable
     {

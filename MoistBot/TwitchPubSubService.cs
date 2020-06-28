@@ -1,7 +1,14 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MoistBot.Infrastructure;
+using MoistBot.Models;
+using MoistBot.Models.Twitch;
+using MoistBot.Models.Twitch.Enums;
+using MoistBot.Services;
 using TwitchLib.Api;
 using TwitchLib.PubSub;
 using TwitchLib.PubSub.Events;
@@ -13,21 +20,25 @@ namespace MoistBot
         //428420296
         private readonly IHttpClientFactory _factory;
         private readonly IHubContext<TwitchHub> _twitchHub;
+        private readonly IServiceProvider _provider;
         private readonly TwitchSettings _twitchSettings;
         private readonly TwitchPubSub _pubsub;
 
         public TwitchPubSubService(
             IHttpClientFactory factory,
             IOptionsMonitor<TwitchSettings> optionsMonitor,
-            IHubContext<TwitchHub> twitchHub)
+            IHubContext<TwitchHub> twitchHub,
+            IServiceProvider provider)
         {
             _factory = factory;
             _twitchHub = twitchHub;
+            _provider = provider;
             _twitchSettings = optionsMonitor.CurrentValue;
             _pubsub = new TwitchPubSub();
 
             _pubsub.OnPubSubServiceConnected += Pubsub_OnPubSubServiceConnected;
             _pubsub.OnFollow += ActionFollow;
+            _pubsub.OnChannelSubscription += UserSubscribed;
         }
 
         private string AccessToken { get; set; }
@@ -57,7 +68,38 @@ namespace MoistBot
 
         private async void ActionFollow(object sender, OnFollowArgs e)
         {
-            await _twitchHub.Clients.All.SendAsync("follow", e.DisplayName);
+            using (var scope = _provider.CreateScope())
+            {
+                var userRegister = scope.ServiceProvider.GetRequiredService<RegisterUserAction>();
+
+                var result = await userRegister.TrySaveFollow(e.UserId);
+
+                if (result > 0)
+                    await _twitchHub.Clients.All.SendAsync("follow", e.DisplayName);
+            }
+        }
+
+        private async void UserSubscribed(object sender, OnChannelSubscriptionArgs e)
+        {
+            using (var scope = _provider.CreateScope())
+            {
+                var userRegister = scope.ServiceProvider.GetRequiredService<RegisterUserAction>();
+
+                var subscription = new UserSubscription
+                {
+                    TwitchUserId = e.Subscription.UserId,
+                    TwitchUsername = e.Subscription.Username,
+                    Time = e.Subscription.Time,
+                    SubscriptionPlan = (SubscriptionPlan) e.Subscription.SubscriptionPlan,
+                    SubscriptionPlanName = e.Subscription.SubscriptionPlanName,
+                    Months =  e.Subscription.Months ?? 0,
+                    Context = e.Subscription.Context,
+                 };
+
+                await userRegister.SaveSubscriber(subscription);
+
+                await _twitchHub.Clients.All.SendAsync("follow", e.Subscription.Username);
+            }
         }
     }
 }
