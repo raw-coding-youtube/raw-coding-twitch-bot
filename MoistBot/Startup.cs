@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SpaServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using MoistBot.Database;
 using MoistBot.Infrastructure;
 using MoistBot.Services;
+using VueCliMiddleware;
 
 namespace MoistBot
 {
@@ -42,17 +39,18 @@ namespace MoistBot
                     .AddScoped<RegisterUserAction>();
 
             services.AddSignalR();
+            services.AddSpaStaticFiles(opt => opt.RootPath = "client/dist");
             services.AddControllers();
-            services.AddRazorPages()
-                    .AddRazorRuntimeCompilation();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
-            if (env.IsDevelopment())
+            if (_env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseStaticFiles();
 
             app.UseRouting();
 
@@ -60,9 +58,15 @@ namespace MoistBot
             {
                 endpoints.MapDefaultControllerRoute();
 
-                endpoints.MapRazorPages();
-
                 endpoints.MapHub<TwitchHub>("/hub/twitch");
+
+                endpoints.MapToVueCliProxy(
+                    "{*path}",
+                    new SpaOptions { SourcePath = "client" },
+                    npmScript: _env.IsDevelopment() ? "serve" : null,
+                    regex: "Compiled successfully",
+                    forceKill: true
+                );
             });
         }
     }
