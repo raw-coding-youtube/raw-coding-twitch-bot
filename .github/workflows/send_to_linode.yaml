@@ -1,4 +1,8 @@
 ﻿name: Send To Linode
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   pull_code:
