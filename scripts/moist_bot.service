@@ -2,7 +2,7 @@
 Description=Service for running Moist Botterino
 
 [Service]
-ExecStart=/usr/bin/dotnet /var/app/MoistBot.dll
+ExecStart=/usr/bin/dotnet ./MoistBot.dll
 Restart=always
 # Restart service after 10 seconds if the dotnet service crashes:
 RestartSec=10
@@ -11,6 +11,7 @@ SyslogIdentifier=dotnet-moist
 User=moist
 Environment=ASPNETCORE_ENVIRONMENT=Production
 Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+WorkingDirectory=/var/app
 
 [Install]
 WantedBy=multi-user.target
