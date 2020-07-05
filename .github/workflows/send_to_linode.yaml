@@ -1,7 +1,5 @@
 ﻿name: Send To Linode
 
-on: push
-
 jobs:
   pull_code:
     runs-on: ubuntu-latest
@@ -30,6 +28,7 @@ jobs:
           TwitchSettings.ClientSecret: ${{ secrets.TWITCH_CLIENT_SECRET }}
   build_vuejs:
     needs: pull_code
+    runs-on: ubuntu-latest
     steps:
       - name: Setup node
         uses: actions/setup-node@v1
