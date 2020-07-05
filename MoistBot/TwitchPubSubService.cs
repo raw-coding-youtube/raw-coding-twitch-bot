@@ -10,6 +10,7 @@ using MoistBot.Models.Twitch;
 using MoistBot.Models.Twitch.Enums;
 using MoistBot.Services;
 using TwitchLib.Api;
+using TwitchLib.Api.Helix.Models.Webhooks;
 using TwitchLib.PubSub;
 using TwitchLib.PubSub.Events;
 
@@ -92,13 +93,19 @@ namespace MoistBot
                     Time = e.Subscription.Time,
                     SubscriptionPlan = (SubscriptionPlan) e.Subscription.SubscriptionPlan,
                     SubscriptionPlanName = e.Subscription.SubscriptionPlanName,
-                    Months =  e.Subscription.Months ?? 0,
+                    TotalMonths =  e.Subscription.TotalMonths,
+                    StreakMonths = e.Subscription.StreakMonths,
                     Context = e.Subscription.Context,
                  };
 
                 await userRegister.SaveSubscriber(subscription);
 
-                await _twitchHub.Clients.All.SendAsync("follow", e.Subscription.Username);
+                await _twitchHub.Clients.All.SendAsync("sub", new
+                {
+                    subscription.TwitchUsername,
+                    subscription.StreakMonths,
+                    subscription.TotalMonths,
+                });
             }
         }
     }

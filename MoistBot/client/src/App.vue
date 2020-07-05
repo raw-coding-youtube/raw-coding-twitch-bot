@@ -1,101 +1,112 @@
 <template>
     <div id="app">
+        <div class="dev-work" v-if="env === 'development'">
+            👷 ({{env}}) Last Update: {{ new Date().toTimeString() }} 🔧
+            <div>
+                <button @click="newFollower('Test')">Follow</button>
+                <button @click="newSubscriber({username:'Bob Test', streakMonths: 5, totalMonths: 5})">Sub</button>
+            </div>
+        </div>
         <div id="main">
-<!--            <div class="card">-->
-<!--                <div class="gif"></div>-->
-<!--                <span>TY</span>-->
-<!--                <span>Followed</span>-->
-<!--            </div>-->
+            <div v-if="component">
+                <component :is="component" :payload="payload"></component>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
-
-    const connection = new signalR.HubConnectionBuilder()
-        .withUrl("/hub/twitch")
-        .configureLogging(signalR.LogLevel.Information)
-        .build();
-
-    async function start() {
-        try {
-            await connection.start();
-        } catch (err) {
-            console.log(err);
-            setTimeout(() => start(), 5000);
-        }
-    }
-
-    connection.onclose(async () => {
-        await start();
-    });
-
-    connection.on("follow", (username) => {
-        const div = document.createElement("div");
-        const gif = document.createElement("div");
-        gif.classList.add('gif', "follow")
-        const user = document.createElement("span")
-        user.classList.add('text')
-        user.textContent = username;
-        const follow = document.createElement("span")
-        follow.classList.add('text')
-        follow.textContent = "Followed!";
-
-        div.classList.add("card", "follow")
-        div.append(user)
-        div.append(follow)
-        div.append(gif)
-
-        document.getElementById("main").appendChild(div);
-
-        setTimeout(function () {
-            div.remove();
-        }, 8000)
-    });
-
-    connection.on("sub", (payload) => {
-        console.log(payload)
-        const div = document.createElement("div");
-        const gif = document.createElement("div");
-        gif.classList.add('gif', "sub")
-        const user = document.createElement("span")
-        user.textContent = payload.username;
-        user.classList.add('text')
-        const sub = document.createElement("span")
-        sub.classList.add('text')
-        const total = document.createElement("span")
-        total.classList.add('text')
-
-        if (payload.total === 0) {
-            sub.textContent = "New Subscriber!";
-        } else {
-            sub.textContent = "Subscribed AGAIN!";
-            total.textContent = payload.total + " Months!";
-        }
-
-        div.classList.add("card", "sub")
-        div.append(user)
-        div.append(sub)
-        div.append(gif)
-        if (payload.total > 0) {
-            div.append(total)
-        }
-
-        document.getElementById("main").appendChild(div);
-
-        setTimeout(function () {
-            div.remove();
-        }, 12000)
-    });
-
-    start();
+    import {HubConnectionBuilder, LogLevel} from '@microsoft/signalr'
+    import FollowerAlert from "./components/alerts/follower-alert";
+    import SubAlert from "./components/alerts/sub-alert";
 
     export default {
         name: 'App',
+        components: {SubAlert, FollowerAlert},
+        data: () => ({
+            connection: null,
+            alert: {
+                queue: [],
+                active: false,
+            },
+            component: null,
+            payload: null,
+            env: process.env.NODE_ENV
+        }),
+        created() {
+            this.connection = new HubConnectionBuilder()
+                .withUrl("/hub/twitch")
+                .configureLogging(LogLevel.Information)
+                .build();
+
+            this.connection.onclose(async () => {
+                await this.start();
+            });
+
+            this.connection.on("follow", this.newFollower);
+            this.connection.on("sub", this.newSubscriber);
+
+            this.start()
+        },
+        methods: {
+            async start() {
+                try {
+                    await this.connection.start();
+                } catch (err) {
+                    console.log(err);
+                    setTimeout(() => this.start(), 5000);
+                }
+            },
+            newFollower(username) {
+                this.queueComponent(FollowerAlert, {username}, 8000)
+            },
+            newSubscriber(payload) {
+                this.queueComponent(SubAlert, payload, 12000)
+            },
+            queueComponent(component, payload, timeout) {
+                this.alert.queue.push({
+                    component, payload, timeout
+                })
+                console.log(this.alert);
+
+                if (!this.alert.active) {
+                    this.popQueue();
+                }
+            },
+            popQueue() {
+                this.active = true;
+
+                const {component, payload, timeout} = this.alert.queue.splice(0, 1)[0]
+
+                this.payload = payload
+                this.component = component
+
+                setTimeout(() => {
+                    if (this.alert.queue.length > 0) {
+                        this.popQueue()
+                    } else {
+                        this.alert.active = false
+                        this.component = null
+                        this.payload = null
+                    }
+                }, timeout)
+            }
+        },
     }
+
 </script>
 
 <style>
+    .dev-work {
+        position: absolute;
+        top: 4rem;
+        right: 4rem;
+        color: red;
+        font-size: 24px;
+        font-weight: bold;
+        z-index: 100;
+    }
+
     div#main {
         display: flex;
         position: fixed;
@@ -119,13 +130,6 @@
         box-shadow: 0 0 10px 1px hotpink;
     }
 
-    div.card.follow {
-        background-image: url("https://aw-test-bucket.eu-central-1.linodeobjects.com/follow");
-    }
-
-    div.card.sub {
-        background-image: url("https://aw-test-bucket.eu-central-1.linodeobjects.com/follow");
-    }
 
     div.card > .text {
         z-index: 10;
@@ -145,11 +149,4 @@
         opacity: 0.2;
     }
 
-    .gif.follow {
-        background-image: url("https://aw-test-bucket.eu-central-1.linodeobjects.com/bk");
-    }
-
-    .gif.sub {
-        background-image: url("https://aw-test-bucket.eu-central-1.linodeobjects.com/sub");
-    }
 </style>

@@ -11,7 +11,8 @@ namespace MoistBot.Models.Twitch
         public DateTime Time { get; set; }
         public SubscriptionPlan SubscriptionPlan { get; set; }
         public string SubscriptionPlanName { get; set; }
-        public int Months { get; set; }
+        public int TotalMonths { get; set; }
+        public int StreakMonths { get; set; }
         public string Context { get; set; }
     }
 }
