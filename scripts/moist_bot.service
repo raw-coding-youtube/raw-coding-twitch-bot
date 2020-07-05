@@ -9,7 +9,6 @@ Restart=always
 RestartSec=10
 KillSignal=SIGINT
 SyslogIdentifier=dotnet-moist
-User=moist
 Environment=ASPNETCORE_ENVIRONMENT=Production
 Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
 

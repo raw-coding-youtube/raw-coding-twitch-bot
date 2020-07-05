@@ -74,7 +74,7 @@
                 }
             },
             popQueue() {
-                this.active = true;
+                this.alert.active = true;
 
                 const {component, payload, timeout} = this.alert.queue.splice(0, 1)[0]
 
