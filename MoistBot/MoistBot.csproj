@@ -15,16 +15,10 @@
     <ProjectReference Include="..\TwitchLib.PubSub\TwitchLib.PubSub.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="client\src\assets" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Update="wwwroot\favicon.ico">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="Pages\Index2.cshtml" />
   </ItemGroup>
   
 </Project>

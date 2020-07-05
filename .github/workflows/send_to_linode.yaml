@@ -3,17 +3,21 @@
 on: push
 
 jobs:
-  build:
+  pull_code:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+  build_dotnet:
+    needs: pull_code
+    runs-on: ubuntu-latest
+    steps:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.101
       - name: Install dependencies
         run: dotnet restore
-      - name: Build
+      - name: Build Dotnet Core App
         run: dotnet publish -c Release --no-restore
       - name: Move Systemd service
         run: mv ./scripts/* ./MoistBot/bin/Release/netcoreapp3.1/publish/
@@ -24,6 +28,22 @@ jobs:
         env:
           TwitchSettings.ClientId: ${{ secrets.TWITCH_CLIENT_ID }}
           TwitchSettings.ClientSecret: ${{ secrets.TWITCH_CLIENT_SECRET }}
+  build_vuejs:
+    needs: pull_code
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v1
+      - run: npm install
+      - run: npm run build
+  publish_to_linode:
+    needs: [build_vuejs, build_dotnet]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mount vuejs App
+        run: |
+          rm -rf ./MoistBot/bin/Release/netcoreapp3.1/publish/client/*
+          mkdir ./MoistBot/bin/Release/netcoreapp3.1/publish/client/dist
+          mv ./MoistBot/client/dist/* ./MoistBot/bin/Release/netcoreapp3.1/publish/client/dist
       - name: Push To Linode
         run: |
           mkdir ~/.ssh
