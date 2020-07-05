@@ -5,7 +5,7 @@ on:
       - master
 
 jobs:
-  pull_code:
+  build_and_deploy_bot:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -28,10 +28,13 @@ jobs:
           TwitchSettings.ClientSecret: ${{ secrets.TWITCH_CLIENT_SECRET }}
       - name: Setup node
         uses: actions/setup-node@v1
-      - name: Mount vuejs App
+      - name: Build Vuejs App
+        working-directory: ./MoistBot/client
         run: |
           npm install
           npm run build
+      - name: Attach Vuejs App
+        run: |
           rm -rf ./MoistBot/bin/Release/netcoreapp3.1/publish/client/*
           mkdir ./MoistBot/bin/Release/netcoreapp3.1/publish/client/dist
           mv ./MoistBot/client/dist/* ./MoistBot/bin/Release/netcoreapp3.1/publish/client/dist
