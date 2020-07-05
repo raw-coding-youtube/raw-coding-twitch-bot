@@ -38,8 +38,8 @@ namespace MoistBot
                     .AddSingleton<TwitchPubSubService>()
                     .AddScoped<RegisterUserAction>();
 
-            services.AddSignalR();
             services.AddSpaStaticFiles(opt => opt.RootPath = "client/dist");
+            services.AddSignalR();
             services.AddControllers();
         }
 
@@ -50,16 +50,12 @@ namespace MoistBot
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseStaticFiles();
+            app.UseSpaStaticFiles();
 
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute();
-
-                endpoints.MapHub<TwitchHub>("/hub/twitch");
-
                 endpoints.MapToVueCliProxy(
                     "{*path}",
                     new SpaOptions { SourcePath = "client" },
@@ -67,6 +63,10 @@ namespace MoistBot
                     regex: "Compiled successfully",
                     forceKill: true
                 );
+
+                endpoints.MapDefaultControllerRoute();
+
+                endpoints.MapHub<TwitchHub>("/hub/twitch");
             });
         }
     }
