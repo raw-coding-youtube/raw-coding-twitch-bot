@@ -30,10 +30,12 @@
             env: process.env.NODE_ENV
         }),
         created() {
-            this.connection = new HubConnectionBuilder()
-                .withUrl("/hub/twitch")
-                .configureLogging(LogLevel.Information)
-                .build();
+            const builder = new HubConnectionBuilder()
+                .withUrl("/hub/twitch");
+
+            if (this.env === 'development') builder.configureLogging(LogLevel.Information);
+
+            this.connection = builder.build();
 
             this.connection.onclose(async () => {
                 await this.start();
