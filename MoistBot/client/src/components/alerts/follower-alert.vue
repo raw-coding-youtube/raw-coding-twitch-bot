@@ -1,7 +1,7 @@
 ﻿<template>
     <div class="card follow">
         <div class="gif follow"></div>
-        <span class="text">{{username}}</span>
+        <span class="text">{{payload.displayName}}</span>
         <span class="text">Followed</span>
     </div>
 </template>
@@ -13,11 +13,6 @@
             payload: {
                 type: Object,
                 required: true,
-            }
-        },
-        computed: {
-            username() {
-                return this.payload.username
             }
         }
     }
