@@ -1,3 +1,4 @@
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MoistBot.Database;
+using MoistBot.EventEmitting;
 using MoistBot.Infrastructure;
 using MoistBot.Services;
 using VueCliMiddleware;
@@ -33,6 +35,9 @@ namespace MoistBot
             {
                 options.UseInMemoryDatabase("Dev");
             });
+
+            services.AddSingleton(provider => Channel.CreateUnbounded<EventPackage>());
+            services.AddHostedService<EventDispatcher>();
 
             services.AddHttpClient()
                     .AddSingleton<TwitchPubSubService>()

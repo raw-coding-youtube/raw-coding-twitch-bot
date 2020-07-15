@@ -3,8 +3,8 @@
         <div class="dev-work" v-if="env === 'development'">
             👷 ({{env}}) Last Update: {{ new Date().toTimeString() }} 🔧
             <div>
-                <button @click="newFollower('Test')">Follow</button>
-                <button @click="newSubscriber({username:'Bob Test', streakMonths: 5, totalMonths: 5})">Sub</button>
+                <button @click="testGet('/api/test/follow')">Follow</button>
+                <button @click="testGet(`/api/test/sub?count=${Math.random() * 10 | 0}`)">Sub</button>
             </div>
         </div>
         <div id="main">
@@ -25,10 +25,6 @@
         components: {SubAlert, FollowerAlert},
         data: () => ({
             connection: null,
-            alert: {
-                queue: [],
-                active: false,
-            },
             component: null,
             payload: null,
             env: process.env.NODE_ENV
@@ -43,8 +39,14 @@
                 await this.start();
             });
 
-            this.connection.on("follow", this.newFollower);
-            this.connection.on("sub", this.newSubscriber);
+            this.connection.on("HandleEvent", ({target, attributes, displayTime}) => {
+                this.component = this.componentFactory(target)
+                this.payload = attributes
+                setTimeout(() => {
+                    this.component = null
+                    this.payload = null
+                }, displayTime)
+            });
 
             this.start()
         },
@@ -57,39 +59,12 @@
                     setTimeout(() => this.start(), 5000);
                 }
             },
-            newFollower(username) {
-                this.queueComponent(FollowerAlert, {username}, 8000)
+            componentFactory(target) {
+                if (target === 'Follow') return FollowerAlert;
+                if (target === 'Subscribe') return SubAlert;
             },
-            newSubscriber(payload) {
-                this.queueComponent(SubAlert, payload, 12000)
-            },
-            queueComponent(component, payload, timeout) {
-                this.alert.queue.push({
-                    component, payload, timeout
-                })
-                console.log(this.alert);
-
-                if (!this.alert.active) {
-                    this.popQueue();
-                }
-            },
-            popQueue() {
-                this.alert.active = true;
-
-                const {component, payload, timeout} = this.alert.queue.splice(0, 1)[0]
-
-                this.payload = payload
-                this.component = component
-
-                setTimeout(() => {
-                    if (this.alert.queue.length > 0) {
-                        this.popQueue()
-                    } else {
-                        this.alert.active = false
-                        this.component = null
-                        this.payload = null
-                    }
-                }, timeout)
+            testGet(route) {
+                return fetch(route)
             }
         },
     }

@@ -1,8 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading.Channels;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
+using MoistBot.EventEmitting;
 
 namespace MoistBot.Controllers
 {
@@ -11,21 +13,29 @@ namespace MoistBot.Controllers
     public class TestController : ControllerBase
     {
         private readonly IWebHostEnvironment _env;
-        private readonly IHubContext<TwitchHub> _twitchHub;
+        private ChannelWriter<EventPackage> _eventWriter;
 
         public TestController(
             IWebHostEnvironment env,
-            IHubContext<TwitchHub> twitchHub)
+            Channel<EventPackage> eventChannel)
         {
             _env = env;
-            _twitchHub = twitchHub;
+            _eventWriter = eventChannel.Writer;
         }
 
         [HttpGet("follow")]
         public async Task<IActionResult> TestFollow()
         {
             if (_env.IsDevelopment())
-                await _twitchHub.Clients.All.SendAsync("follow", "--TEST NAME--");
+                await _eventWriter.WriteAsync(new EventPackage
+                {
+                    Target = Targets.Follow,
+                    Attributes = new
+                    {
+                        DisplayName = "Test Follower!"
+                    },
+                    DisplayTime = 6000
+                });
 
             return Ok();
         }
@@ -34,15 +44,16 @@ namespace MoistBot.Controllers
         public async Task<IActionResult> TestSub(int count)
         {
             if (_env.IsDevelopment())
-            {
-
-                await _twitchHub.Clients.All.SendAsync("sub", new
-                {
-                    Username = "--TEST NAME--",
-                    Total = count,
-                    Tier = "GOD",
+                await _eventWriter.WriteAsync(new EventPackage {
+                    Target = Targets.Subscribe,
+                    Attributes = new
+                    {
+                        TwitchUsername = "Test User",
+                        StreakMonths = 2,
+                        TotalMonths = count,
+                    },
+                    DisplayTime = 8000
                 });
-            }
 
             return Ok();
         }

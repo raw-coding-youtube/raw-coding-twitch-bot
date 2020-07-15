@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Net.Http;
-using System.Threading.Tasks;
+using System.Threading.Channels;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MoistBot.EventEmitting;
 using MoistBot.Infrastructure;
-using MoistBot.Models;
 using MoistBot.Models.Twitch;
 using MoistBot.Models.Twitch.Enums;
 using MoistBot.Services;
 using TwitchLib.Api;
-using TwitchLib.Api.Helix.Models.Webhooks;
 using TwitchLib.PubSub;
 using TwitchLib.PubSub.Events;
 
@@ -18,22 +20,24 @@ namespace MoistBot
 {
     public class TwitchPubSubService
     {
-        //428420296
-        private readonly IHttpClientFactory _factory;
-        private readonly IHubContext<TwitchHub> _twitchHub;
         private readonly IServiceProvider _provider;
+        private readonly IWebHostEnvironment _env;
+        private readonly ILogger<TwitchPubSubService> _logger;
         private readonly TwitchSettings _twitchSettings;
         private readonly TwitchPubSub _pubsub;
+        private readonly ChannelWriter<EventPackage> _eventChannel;
 
         public TwitchPubSubService(
-            IHttpClientFactory factory,
             IOptionsMonitor<TwitchSettings> optionsMonitor,
-            IHubContext<TwitchHub> twitchHub,
-            IServiceProvider provider)
+            Channel<EventPackage> eventChannel,
+            IServiceProvider provider,
+            IWebHostEnvironment env,
+            ILogger<TwitchPubSubService> logger)
         {
-            _factory = factory;
-            _twitchHub = twitchHub;
+            _eventChannel = eventChannel.Writer;
             _provider = provider;
+            _env = env;
+            _logger = logger;
             _twitchSettings = optionsMonitor.CurrentValue;
             _pubsub = new TwitchPubSub();
 
@@ -69,14 +73,30 @@ namespace MoistBot
 
         private async void ActionFollow(object sender, OnFollowArgs e)
         {
-            using (var scope = _provider.CreateScope())
+            try
             {
-                var userRegister = scope.ServiceProvider.GetRequiredService<RegisterUserAction>();
+                using (var scope = _provider.CreateScope())
+                {
+                    var userRegister = scope.ServiceProvider.GetRequiredService<RegisterUserAction>();
 
-                var result = await userRegister.TrySaveFollow(e.UserId);
+                    var result = await userRegister.TrySaveFollow(e.UserId);
 
-                if (result > 0)
-                    await _twitchHub.Clients.All.SendAsync("follow", e.DisplayName);
+                    if (_env.IsProduction() && result <= 0) return;
+
+                    await _eventChannel.WriteAsync(new EventPackage
+                    {
+                        Target = Targets.Follow,
+                        Attributes = new
+                        {
+                            e.DisplayName
+                        },
+                        DisplayTime = 6000
+                    });
+                }
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "Error during: {0}", nameof(ActionFollow));
             }
         }
 
@@ -100,11 +120,15 @@ namespace MoistBot
 
                 await userRegister.SaveSubscriber(subscription);
 
-                await _twitchHub.Clients.All.SendAsync("sub", new
-                {
-                    subscription.TwitchUsername,
-                    subscription.StreakMonths,
-                    subscription.TotalMonths,
+                await _eventChannel.WriteAsync(new EventPackage {
+                    Target = Targets.Subscribe,
+                    Attributes = new
+                    {
+                        subscription.TwitchUsername,
+                        subscription.StreakMonths,
+                        subscription.TotalMonths,
+                    },
+                    DisplayTime = 8000
                 });
             }
         }
