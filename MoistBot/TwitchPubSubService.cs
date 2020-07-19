@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Net.Http;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -113,14 +111,15 @@ namespace MoistBot
                     Time = e.Subscription.Time,
                     SubscriptionPlan = (SubscriptionPlan) e.Subscription.SubscriptionPlan,
                     SubscriptionPlanName = e.Subscription.SubscriptionPlanName,
-                    TotalMonths =  e.Subscription.TotalMonths,
+                    TotalMonths = e.Subscription.TotalMonths,
                     StreakMonths = e.Subscription.StreakMonths,
                     Context = e.Subscription.Context,
-                 };
+                };
 
                 await userRegister.SaveSubscriber(subscription);
 
-                await _eventChannel.WriteAsync(new EventPackage {
+                await _eventChannel.WriteAsync(new EventPackage
+                {
                     Target = Targets.Subscribe,
                     Attributes = new
                     {

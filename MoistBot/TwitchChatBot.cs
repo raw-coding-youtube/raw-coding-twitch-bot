@@ -1,25 +1,33 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MoistBot.FAQ;
-using TwitchLib.Client;
+using MoistBot.Infrastructure;
 using TwitchLib.Client.Enums;
+using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Models;
 
-namespace MoistBot.ASDFASDF
+namespace MoistBot
 {
-    public static class Program
+    public class TwitchChatBot
     {
+        private readonly IWebHostEnvironment _env;
+        private readonly ILogger<TwitchChatBot> _logger;
         private static ChatMoisturizer _moisturizer;
         private static TwitchClient _client;
-        private static readonly SemaphoreSlim Flag = new SemaphoreSlim(0);
 
-        public static Task Mainaa()
+        public TwitchChatBot(
+            IOptionsMonitor<TwitchSettings> optionsMonitor,
+            IWebHostEnvironment env,
+            ILogger<TwitchChatBot> logger)
         {
-            var credentials = new ConnectionCredentials("raw_coding", "");
+            _env = env;
+            _logger = logger;
+            var credentials = new ConnectionCredentials("raw_coding", optionsMonitor.CurrentValue.AccessToken);
             var clientOptions = new ClientOptions
             {
                 MessagesAllowedInPeriod = 750,
@@ -29,28 +37,27 @@ namespace MoistBot.ASDFASDF
 
             _client = new TwitchClient(customClient);
             _client.Initialize(credentials, "raw_coding");
-
             _client.OnLog += Client_OnLog;
             _client.OnJoinedChannel += Client_OnJoinedChannel;
             _client.OnMessageReceived += Client_OnMessageReceived;
-            _client.OnWhisperReceived += Client_OnWhisperReceived;
             _client.OnNewSubscriber += Client_OnNewSubscriber;
-            _client.Connect();
-
             _moisturizer = new ChatMoisturizer(_client);
-            return Flag.WaitAsync();
+        }
+
+        public void Start()
+        {
+            _client.Connect();
         }
 
         private static void Client_OnLog(object sender, OnLogArgs e)
         {
-            Console.WriteLine($"{e.DateTime.ToString()}: {e.BotUsername} - {e.Data}");
+            Console.WriteLine($"{e.DateTime}: {e.BotUsername} - {e.Data}");
         }
 
         private static void Client_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
             _client.SendMessage(e.Channel, "Moist Bot in the building, behave.");
         }
-
 
         private static void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
@@ -65,12 +72,6 @@ namespace MoistBot.ASDFASDF
             }
 
             _moisturizer.Moisturize(e);
-        }
-
-        private static void Client_OnWhisperReceived(object sender, OnWhisperReceivedArgs e)
-        {
-            if (e.WhisperMessage.Username == "my_friend")
-                _client.SendWhisper(e.WhisperMessage.Username, "Hey! Whispers are so cool!!");
         }
 
         private static void Client_OnNewSubscriber(object sender, OnNewSubscriberArgs e)

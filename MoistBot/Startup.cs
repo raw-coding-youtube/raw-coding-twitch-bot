@@ -29,7 +29,7 @@ namespace MoistBot
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<TwitchSettings>(_config);
+            services.Configure<TwitchSettings>(_config.GetSection(TwitchSettings.Name));
 
             services.AddDbContext<AppDbContext>(options =>
             {
@@ -41,6 +41,7 @@ namespace MoistBot
 
             services.AddHttpClient()
                     .AddSingleton<TwitchPubSubService>()
+                    .AddSingleton<TwitchChatBot>()
                     .AddScoped<RegisterUserAction>();
 
             services.AddSpaStaticFiles(opt => opt.RootPath = "client/dist");

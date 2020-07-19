@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MoistBot.EventEmitting
+﻿namespace MoistBot.EventEmitting
 {
     public class EventPackage
     {

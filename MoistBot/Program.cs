@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace MoistBot
 {
@@ -20,6 +14,9 @@ namespace MoistBot
             {
                 var pubsub = scope.ServiceProvider.GetRequiredService<TwitchPubSubService>();
                 pubsub.Start();
+
+                var chatBot = scope.ServiceProvider.GetRequiredService<TwitchChatBot>();
+                chatBot.Start();
             }
 
             host.Run();
