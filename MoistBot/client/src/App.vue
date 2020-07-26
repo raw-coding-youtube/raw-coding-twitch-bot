@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <div class="dev-work" v-if="env === 'development'">
+        <div class="dev-work warn" v-if="env === 'development'">
             👷 ({{env}}) Last Update: {{ new Date().toTimeString() }} 🔧
             <div>
                 <button @click="testGet('/api/test/follow')">Follow</button>
@@ -11,6 +11,9 @@
             <div v-if="component">
                 <component :is="component" :payload="payload"></component>
             </div>
+        </div>
+        <div class="offline warn" v-if="offline">
+            Service Offline
         </div>
     </div>
 </template>
@@ -27,9 +30,20 @@
             connection: null,
             component: null,
             payload: null,
-            env: process.env.NODE_ENV
+            env: process.env.NODE_ENV,
+            version: 0,
+            offline: true,
         }),
+        watch: {
+            version: function (n, o) {
+                if (n && o && n !== o) {
+                    location.reload()
+                }
+            }
+        },
         created() {
+            this.pollVersion();
+
             const builder = new HubConnectionBuilder()
                 .withUrl("/hub/twitch");
 
@@ -38,7 +52,7 @@
             this.connection = builder.build();
 
             this.connection.onclose(async () => {
-                await this.start();
+                await this.healthCheck()
             });
 
             this.connection.on("HandleEvent", ({target, attributes, displayTime}) => {
@@ -57,9 +71,29 @@
                 try {
                     await this.connection.start();
                 } catch (err) {
-                    console.log(err);
                     setTimeout(() => this.start(), 5000);
                 }
+            },
+            healthCheck() {
+                fetch('/health')
+                    .then(() => {
+                        return this.start()
+                    })
+            },
+            pollVersion() {
+                fetch('/api/health')
+                    .then(res => res.json())
+                    .then(version => {
+                        this.version = version
+                        this.offline = false
+                    })
+                    .catch(err => {
+                        console.log(err)
+                        this.offline = true
+                    })
+                    .finally(() => {
+                        setTimeout(this.pollVersion, 10000)
+                    })
             },
             componentFactory(target) {
                 if (target === 'Follow') return FollowerAlert;
@@ -74,14 +108,27 @@
 </script>
 
 <style>
-    .dev-work {
+    body {
+        margin: 0;
+    }
+
+    .warn {
         position: absolute;
-        top: 4rem;
-        right: 4rem;
         color: red;
         font-size: 24px;
         font-weight: bold;
         z-index: 100;
+    }
+
+    .offline {
+        bottom: 24px;
+        right: 166px;
+        font-size: 26px;
+    }
+
+    .dev-work {
+        top: 4rem;
+        right: 4rem;
     }
 
     div#main {
@@ -89,7 +136,6 @@
         position: fixed;
         width: 100%;
         height: 100%;
-        margin-top: 5px;
         justify-content: center;
     }
 
