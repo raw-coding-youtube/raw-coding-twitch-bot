@@ -26,7 +26,8 @@ jobs:
           files: './MoistBot/bin/Release/netcoreapp3.1/publish/appsettings.Production.json'
         env:
           TwitchSettings.ClientId: ${{ secrets.TWITCH_CLIENT_ID }}
-          TwitchSettings.ClientSecret: ${{ secrets.TWITCH_CLIENT_SECRET }}
+          TwitchSettings.ClientSecret: ${{ secrets.TWITCH_CLIENT_SECRET }},
+          TwitchSettings.AccessToken: ${{ secrets.TWITCH_ACCESS_TOKEN }}
       - name: Setup node
         uses: actions/setup-node@v1
       - name: Build Vuejs App
