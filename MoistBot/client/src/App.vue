@@ -52,7 +52,7 @@
             this.connection = builder.build();
 
             this.connection.onclose(async () => {
-                await this.healthCheck()
+                await this.start()
             });
 
             this.connection.on("HandleEvent", ({target, attributes, displayTime}) => {
@@ -73,12 +73,6 @@
                 } catch (err) {
                     setTimeout(() => this.start(), 5000);
                 }
-            },
-            healthCheck() {
-                fetch('/health')
-                    .then(() => {
-                        return this.start()
-                    })
             },
             pollVersion() {
                 fetch('/api/health')
