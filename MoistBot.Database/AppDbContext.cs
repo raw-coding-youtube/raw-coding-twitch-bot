@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MoistBot.Models;
 using MoistBot.Models.Twitch;
 
 namespace MoistBot.Database
@@ -7,8 +8,8 @@ namespace MoistBot.Database
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        public DbSet<UserFollow> UserFollows { get; set; }
-        public DbSet<UserSubscription> UserSubscriptions { get; set; }
-
+        public DbSet<User> Users { get; set; }
+        public DbSet<TwitchUser> TwitchMetadata { get; set; }
+        public DbSet<TwitchSubscription> TwitchSubscriptions { get; set; }
     }
 }

@@ -104,9 +104,9 @@ namespace MoistBot
             {
                 var userRegister = scope.ServiceProvider.GetRequiredService<RegisterUserAction>();
 
-                var subscription = new UserSubscription
+                var subscription = new TwitchSubscription
                 {
-                    TwitchUserId = e.Subscription.UserId,
+                    UserId = e.Subscription.UserId,
                     TwitchUsername = e.Subscription.Username,
                     Time = e.Subscription.Time,
                     SubscriptionPlan = (SubscriptionPlan) e.Subscription.SubscriptionPlan,
@@ -116,7 +116,7 @@ namespace MoistBot
                     Context = e.Subscription.Context,
                 };
 
-                await userRegister.SaveSubscriber(subscription);
+                await userRegister.SaveSubscription(subscription);
 
                 await _eventChannel.WriteAsync(new EventPackage
                 {

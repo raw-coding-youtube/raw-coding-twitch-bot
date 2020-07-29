@@ -31,9 +31,11 @@ namespace MoistBot
         {
             services.Configure<TwitchSettings>(_config.GetSection(TwitchSettings.Name));
 
+            // todo setup postgres in prod
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseInMemoryDatabase("Dev");
+                options.UseNpgsql(_config.GetConnectionString("Default"),
+                                  b=>b.MigrationsAssembly("MoistBot.Database"));
             });
 
             services.AddSingleton(provider => Channel.CreateUnbounded<EventPackage>());
