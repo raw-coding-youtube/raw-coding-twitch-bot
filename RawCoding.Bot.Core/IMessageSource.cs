@@ -4,6 +4,6 @@ namespace MoistBot.Models
 {
     public interface IMessageSource
     {
-        ValueTask Register(IMessageSink messageSink);
+        ValueTask Register(IMessageContextSink messageContextSink);
     }
 }

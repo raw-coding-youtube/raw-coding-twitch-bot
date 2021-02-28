@@ -7,14 +7,14 @@ namespace RawCoding.Bot.EventEmitting
 {
     public class MessageProcessingService : BackgroundService
     {
-        private readonly MessageProcessingContext _messageProcessingContext;
+        private readonly MessageContextProcessingContext _messageContextProcessingContext;
 
-        public MessageProcessingService(MessageProcessingContext messageProcessingContext)
+        public MessageProcessingService(MessageContextProcessingContext messageContextProcessingContext)
         {
-            _messageProcessingContext = messageProcessingContext;
+            _messageContextProcessingContext = messageContextProcessingContext;
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken) =>
-            _messageProcessingContext.Start(stoppingToken);
+            _messageContextProcessingContext.Start(stoppingToken);
     }
 }

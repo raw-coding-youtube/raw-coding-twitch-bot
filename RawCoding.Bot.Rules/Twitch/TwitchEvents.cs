@@ -3,13 +3,9 @@ using MoistBot.Models;
 
 namespace RawCoding.Bot.Rules.Twitch
 {
-    public record TwitchMessage(string Message) : Message;
+    public record SendTwitchPublicMessage(string Channel, string Message) : Message;
 
-    public record ReceivedTwitchMessage(string Channel, string Username, string Message) : TwitchMessage(Message);
-
-    public record SendTwitchPublicMessage(string Channel, string Message) : TwitchMessage(Message);
-
-    public record SendTwitchPrivateMessage(string Username, string Message) : TwitchMessage(Message);
+    public record SendTwitchPrivateMessage(string Username, string Message) : Message;
 
     public record TwitchFollow(string Username) : Message;
 

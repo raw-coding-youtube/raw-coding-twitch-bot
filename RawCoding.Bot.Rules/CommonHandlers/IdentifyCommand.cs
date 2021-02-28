@@ -5,13 +5,13 @@ namespace RawCoding.Bot.Rules.CommonHandlers
 {
     public class IdentifyCommand : MessageHandler<CustomerMessage>
     {
-        protected override ValueTask<Message> Handle(CustomerMessage msg)
+        protected override ValueTask Handle(CustomerMessage msg)
         {
-            if (string.IsNullOrEmpty(msg.Message)) return Message.NoOpTask;
+            if (string.IsNullOrEmpty(msg.Message)) return ValueTask.CompletedTask;
 
-            if (!msg.Message.TrimStart().StartsWith('!')) return Message.NoOpTask;
+            if (!msg.Message.TrimStart().StartsWith('!')) return ValueTask.CompletedTask;
 
-            return Message.TaskFrom(new ExecuteCommand(msg.Author, msg.Message));
+            return Broadcast(new ExecuteCommand(msg.Author, msg.Message));
         }
     }
 }

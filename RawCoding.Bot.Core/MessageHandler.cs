@@ -1,17 +1,24 @@
-﻿using System.Data;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace MoistBot.Models
 {
     public abstract class MessageHandler
     {
-        internal abstract ValueTask<Message> InternalHandle(Message msg);
+        internal IMessageContextSink Sink { get; set; }
+        public MessageContext MessageContext { get; internal set; }
+        internal abstract ValueTask InternalHandle(MessageContext ctx);
+        protected ValueTask Broadcast(Message message) => Sink.Send(MessageContext with {Message = message});
     }
 
     public abstract class MessageHandler<TIn> : MessageHandler
         where TIn : Message
     {
-        internal override ValueTask<Message> InternalHandle(Message msg) => Handle((TIn) msg);
-        protected abstract ValueTask<Message> Handle(TIn msg);
+        internal override ValueTask InternalHandle(MessageContext ctx)
+        {
+            MessageContext = ctx;
+            return Handle((TIn) ctx.Message);
+        }
+
+        protected abstract ValueTask Handle(TIn msg);
     }
 }

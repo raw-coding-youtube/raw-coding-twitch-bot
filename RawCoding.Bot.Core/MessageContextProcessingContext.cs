@@ -7,12 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MoistBot.Models
 {
-    public class MessageProcessingContext : IMessageSink
+    public class MessageContextProcessingContext : IMessageContextSink
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly Channel<MessageContext> _eventChannel;
 
-        public MessageProcessingContext(IServiceProvider serviceProvider)
+        public MessageContextProcessingContext(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
             _eventChannel = Channel.CreateUnbounded<MessageContext>();
@@ -33,20 +33,20 @@ namespace MoistBot.Models
                         var handlers = scope.ServiceProvider
                             .GetServices(typeof(MessageHandler<>).MakeGenericType(msgCtx.Message.GetType()));
 
-                        await Task.WhenAll(handlers.Select(h => ProcessMessage((MessageHandler) h, msgCtx)));
+                        foreach (var handler in handlers)
+                        {
+                            if (handler is MessageHandler mh)
+                            {
+                                mh.Sink = this;
+                                await mh.InternalHandle(msgCtx);
+                            }
+                        }
                     }
                 }
                 catch (Exception e)
                 {
                 }
             }
-        }
-
-        private async Task ProcessMessage(MessageHandler handler, MessageContext context)
-        {
-            var result = await handler.InternalHandle(context.Message);
-            if (result is NoOp) return;
-            await Send(context with {Message = result});
         }
     }
 }

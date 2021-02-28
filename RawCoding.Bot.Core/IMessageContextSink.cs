@@ -2,7 +2,7 @@
 
 namespace MoistBot.Models
 {
-    public interface IMessageSink
+    public interface IMessageContextSink
     {
         ValueTask Send(MessageContext messageContext);
     }

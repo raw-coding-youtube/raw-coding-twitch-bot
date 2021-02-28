@@ -13,10 +13,10 @@ namespace RawCoding.Bot.Rules.Twitch.Handlers
             _twitchChatBot = twitchChatBot;
         }
 
-        protected override ValueTask<Message> Handle(SendTwitchPrivateMessage msg)
+        protected override ValueTask Handle(SendTwitchPrivateMessage msg)
         {
             _twitchChatBot.Client.SendWhisper(msg.Username, msg.Message);
-            return Message.NoOpTask;
+            return ValueTask.CompletedTask;
         }
     }
 }

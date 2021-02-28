@@ -28,7 +28,7 @@ namespace RawCoding.Bot.Rules.Twitch.Sources
 
         private string AccessToken { get; set; }
 
-        public ValueTask Register(IMessageSink messageSink)
+        public ValueTask Register(IMessageContextSink messageContextSink)
         {
             var api = new TwitchAPI();
             api.Settings.ClientId = _twitchSettings.ClientId;
@@ -49,12 +49,13 @@ namespace RawCoding.Bot.Rules.Twitch.Sources
                 _pubsub.SendTopics(AccessToken);
             };
 
-            _pubsub.OnFollow += (s, e) => messageSink.Send(new(
+            _pubsub.OnFollow += (s, e) => messageContextSink.Send(new(
                 new TwitchFollow(e.Username),
-                "twitch-pubsub"
+                e.FollowedChannelId,
+                Constants.Sources.TwitchPubsub
             ));
 
-            _pubsub.OnChannelSubscription += (s, e) => messageSink.Send(new(
+            _pubsub.OnChannelSubscription += (s, e) => messageContextSink.Send(new(
                 new TwitchSubscription(
                     e.Subscription.UserId,
                     e.Subscription.Username,
@@ -63,7 +64,8 @@ namespace RawCoding.Bot.Rules.Twitch.Sources
                     e.Subscription.StreakMonths,
                     e.Subscription.Context
                 ),
-                "twitch-pubsub"
+                e.Subscription.ChannelId,
+                Constants.Sources.TwitchPubsub
             ));
 
             _pubsub.Connect();

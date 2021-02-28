@@ -37,20 +37,22 @@ namespace RawCoding.Bot.Rules.Twitch.Sources
 
         public TwitchClient Client => _client;
 
-        public ValueTask Register(IMessageSink messageSink)
+        public ValueTask Register(IMessageContextSink messageContextSink)
         {
             _client.OnMessageReceived += (s, e) =>
             {
                 var msg = e.ChatMessage;
-                messageSink.Send(new(
-                    new ReceivedTwitchMessage(msg.Channel, msg.Username, msg.Message),
-                    "twitch-chat"
+                messageContextSink.Send(new(
+                    new CustomerMessage(msg.Username, msg.Message),
+                    msg.Channel,
+                    Constants.Sources.TwitchChat
                 ));
             };
 
-            _client.OnJoinedChannel += (s, e) => messageSink.Send(new(
+            _client.OnJoinedChannel += (s, e) => messageContextSink.Send(new(
                 new SendTwitchPublicMessage(e.Channel, "Moist Bot in the building, behave."),
-                "twitch-chat"
+                e.Channel,
+                Constants.Sources.TwitchChat
             ));
 
             _client.Connect();
