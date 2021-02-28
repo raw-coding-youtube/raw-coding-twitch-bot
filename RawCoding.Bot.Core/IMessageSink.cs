@@ -4,6 +4,6 @@ namespace MoistBot.Models
 {
     public interface IMessageSink
     {
-        ValueTask Send<T>(T e) where T : Message;
+        ValueTask Send(MessageContext messageContext);
     }
 }

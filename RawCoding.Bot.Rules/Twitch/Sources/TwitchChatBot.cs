@@ -42,10 +42,16 @@ namespace RawCoding.Bot.Rules.Twitch.Sources
             _client.OnMessageReceived += (s, e) =>
             {
                 var msg = e.ChatMessage;
-                messageSink.Send(new ReceivedTwitchMessage(msg.Channel, msg.Username, msg.Message));
+                messageSink.Send(new(
+                    new ReceivedTwitchMessage(msg.Channel, msg.Username, msg.Message),
+                    "twitch-chat"
+                ));
             };
 
-            _client.OnJoinedChannel += (s, e) => messageSink.Send(new SendTwitchPublicMessage(e.Channel, "Moist Bot in the building, behave."));
+            _client.OnJoinedChannel += (s, e) => messageSink.Send(new(
+                new SendTwitchPublicMessage(e.Channel, "Moist Bot in the building, behave."),
+                "twitch-chat"
+            ));
 
             _client.Connect();
             return ValueTask.CompletedTask;

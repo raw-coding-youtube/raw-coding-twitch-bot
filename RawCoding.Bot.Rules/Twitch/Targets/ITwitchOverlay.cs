@@ -2,7 +2,7 @@
 
 namespace RawCoding.Bot.Rules.Twitch.Targets
 {
-    public interface ITwitchOverlay : IAction
+    public interface ITwitchOverlay : ITarget
     {
     }
 }

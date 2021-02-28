@@ -49,15 +49,21 @@ namespace RawCoding.Bot.Rules.Twitch.Sources
                 _pubsub.SendTopics(AccessToken);
             };
 
-            _pubsub.OnFollow += (s, e) => messageSink.Send<TwitchFollow>(new(e.Username));
+            _pubsub.OnFollow += (s, e) => messageSink.Send(new(
+                new TwitchFollow(e.Username),
+                "twitch-pubsub"
+            ));
 
-            _pubsub.OnChannelSubscription += (s, e) => messageSink.Send<TwitchSubscription>(new(
-                e.Subscription.UserId,
-                e.Subscription.Username,
-                e.Subscription.Time,
-                e.Subscription.TotalMonths,
-                e.Subscription.StreakMonths,
-                e.Subscription.Context
+            _pubsub.OnChannelSubscription += (s, e) => messageSink.Send(new(
+                new TwitchSubscription(
+                    e.Subscription.UserId,
+                    e.Subscription.Username,
+                    e.Subscription.Time,
+                    e.Subscription.TotalMonths,
+                    e.Subscription.StreakMonths,
+                    e.Subscription.Context
+                ),
+                "twitch-pubsub"
             ));
 
             _pubsub.Connect();

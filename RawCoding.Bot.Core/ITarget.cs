@@ -2,7 +2,7 @@
 
 namespace MoistBot.Models
 {
-    public interface IAction
+    public interface ITarget
     {
         Task SendMessage(Message msg);
     }

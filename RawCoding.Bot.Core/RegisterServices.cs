@@ -53,7 +53,7 @@ namespace MoistBot.Models
             if (type.IsAbstract || type.IsInterface)
                 return;
 
-            if (typeof(IAction).IsAssignableFrom(type))
+            if (typeof(ITarget).IsAssignableFrom(type))
             {
                 foreach (var i in type.GetInterfaces())
                 {

@@ -13,10 +13,10 @@ namespace RawCoding.Bot.Rules.Twitch.Handlers
             _twitchChatBot = twitchChatBot;
         }
 
-        protected override ValueTask Handle(SendTwitchPublicMessage msg)
+        protected override ValueTask<Message> Handle(SendTwitchPublicMessage msg)
         {
             _twitchChatBot.Client.SendMessage(msg.Channel, msg.Message);
-            return ValueTask.CompletedTask;
+            return Message.NoOpTask;
         }
     }
 }
