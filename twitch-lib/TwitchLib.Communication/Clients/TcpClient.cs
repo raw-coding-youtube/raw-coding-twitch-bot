@@ -2,8 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Net.Security;
-using System.Net.Sockets;
-using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using TwitchLib.Communication.Events;

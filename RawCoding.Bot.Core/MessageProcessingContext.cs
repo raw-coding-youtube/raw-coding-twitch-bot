@@ -19,7 +19,7 @@ namespace MoistBot.Models
 
         public ValueTask Send<T>(T e) where T : Message => _eventChannel.Writer.WriteAsync(e);
 
-        public async ValueTask Start(CancellationToken cancellationToken)
+        public async Task Start(CancellationToken cancellationToken)
         {
             while (await _eventChannel.Reader.WaitToReadAsync(cancellationToken))
             {

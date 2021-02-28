@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TwitchLib.PubSub.Events
+﻿namespace TwitchLib.PubSub.Events
 {
     public class OnFollowArgs
     {

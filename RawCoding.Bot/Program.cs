@@ -1,8 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MoistBot;
-using RawCoding.Bot.Rules.Twitch.Sources;
 
 namespace RawCoding.Bot
 {
