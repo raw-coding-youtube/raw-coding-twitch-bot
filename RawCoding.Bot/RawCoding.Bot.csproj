@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\RawCoding.Bot.Core\RawCoding.Bot.Core.csproj"/>
+        <ProjectReference Include="..\RawCoding.Bot.Rules\RawCoding.Bot.Rules.csproj"/>
+    </ItemGroup>
+</Project>
