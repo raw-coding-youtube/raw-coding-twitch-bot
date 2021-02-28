@@ -35,7 +35,7 @@ namespace RawCoding.Bot
             services.AddSingleton(_ => Channel.CreateUnbounded<EventPackage>());
             services.AddHostedService<EventDispatcher>();
 
-            services.AddRawCodingBot(typeof(TwitchChatBot).Assembly);
+            services.AddRawCodingBot(typeof(TwitchChatBot), typeof(Startup));
 
             services.AddSignalR();
             services.AddControllers();

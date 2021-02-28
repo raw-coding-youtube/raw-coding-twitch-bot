@@ -11,10 +11,7 @@ using TwitchLib.Communication.Models;
 
 namespace RawCoding.Bot.Rules.Twitch.Sources
 {
-    [Lifetime(ServiceLifeTime.Singleton)]
-    public class TwitchChatBot : IEventSource,
-        ProcessEvent<SendTwitchPrivateMessage>,
-        ProcessEvent<SendTwitchPublicMessage>
+    public class TwitchChatBot : IMessageSource
     {
         private readonly ILogger<TwitchChatBot> _logger;
         private static TwitchClient _client;
@@ -38,18 +35,17 @@ namespace RawCoding.Bot.Rules.Twitch.Sources
             _client.OnLog += Client_OnLog;
         }
 
-        public ValueTask Register(IEventSink eventSink)
+        public TwitchClient Client => _client;
+
+        public ValueTask Register(IMessageSink messageSink)
         {
             _client.OnMessageReceived += (s, e) =>
             {
                 var msg = e.ChatMessage;
-                eventSink.Send(new ReceivedTwitchMessage(msg.Channel, msg.Username, msg.Message));
+                messageSink.Send(new ReceivedTwitchMessage(msg.Channel, msg.Username, msg.Message));
             };
 
-            _client.OnJoinedChannel += (s, e) =>
-            {
-                eventSink.Send(new SendTwitchPublicMessage(e.Channel, "Moist Bot in the building, behave."));
-            };
+            _client.OnJoinedChannel += (s, e) => messageSink.Send(new SendTwitchPublicMessage(e.Channel, "Moist Bot in the building, behave."));
 
             _client.Connect();
             return ValueTask.CompletedTask;
@@ -58,18 +54,6 @@ namespace RawCoding.Bot.Rules.Twitch.Sources
         private static void Client_OnLog(object sender, OnLogArgs e)
         {
             Console.WriteLine($"{e.DateTime}: {e.BotUsername} - {e.Data}");
-        }
-
-        public Task Process(SendTwitchPrivateMessage e)
-        {
-            _client.SendWhisper(e.Username, e.Message);
-            return Task.CompletedTask;
-        }
-
-        public Task Process(SendTwitchPublicMessage e)
-        {
-            _client.SendMessage(e.Channel, e.Message);
-            return Task.CompletedTask;
         }
     }
 }

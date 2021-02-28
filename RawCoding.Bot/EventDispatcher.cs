@@ -9,13 +9,10 @@ namespace RawCoding.Bot.EventEmitting
     public class EventDispatcher : BackgroundService
     {
         private readonly IHubContext<TwitchHub> _hubContext;
-        private readonly ChannelReader<EventPackage> _eventReader;
 
         public EventDispatcher(
-            Channel<EventPackage> eventChannel,
             IHubContext<TwitchHub> hubContext)
         {
-            _eventReader = eventChannel.Reader;
             _hubContext = hubContext;
         }
 

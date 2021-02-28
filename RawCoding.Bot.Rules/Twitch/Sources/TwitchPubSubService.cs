@@ -8,8 +8,7 @@ using TwitchLib.PubSub;
 
 namespace RawCoding.Bot.Rules.Twitch.Sources
 {
-    [Lifetime(ServiceLifeTime.Singleton)]
-    public class TwitchPubSubService : IEventSource
+    public class TwitchPubSubService : IMessageSource
     {
         private readonly IServiceProvider _provider;
         private readonly ILogger<TwitchPubSubService> _logger;
@@ -29,7 +28,7 @@ namespace RawCoding.Bot.Rules.Twitch.Sources
 
         private string AccessToken { get; set; }
 
-        public ValueTask Register(IEventSink eventSink)
+        public ValueTask Register(IMessageSink messageSink)
         {
             var api = new TwitchAPI();
             api.Settings.ClientId = _twitchSettings.ClientId;
@@ -50,9 +49,9 @@ namespace RawCoding.Bot.Rules.Twitch.Sources
                 _pubsub.SendTopics(AccessToken);
             };
 
-            _pubsub.OnFollow += (s, e) => eventSink.Send<TwitchFollow>(new(e.Username));
+            _pubsub.OnFollow += (s, e) => messageSink.Send<TwitchFollow>(new(e.Username));
 
-            _pubsub.OnChannelSubscription += (s, e) => eventSink.Send<TwitchSubscription>(new(
+            _pubsub.OnChannelSubscription += (s, e) => messageSink.Send<TwitchSubscription>(new(
                 e.Subscription.UserId,
                 e.Subscription.Username,
                 e.Subscription.Time,

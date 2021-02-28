@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,12 +9,18 @@ namespace MoistBot.Models
     {
         public static IServiceCollection AddRawCodingBot(
             this IServiceCollection services,
-            Assembly assembly)
+            params Type[] assemblyAnchors)
         {
-            foreach (var type in assembly.DefinedTypes.Select(x => x.GetTypeInfo()))
+            var types = assemblyAnchors
+                .Select(x => x.Assembly)
+                .SelectMany(x => x.DefinedTypes)
+                .Select(x => x.GetTypeInfo());
+
+            foreach (var type in types)
             {
                 services.TryRegisterSource(type);
                 services.TryRegisterHandler(type);
+                services.TryRegisterAction(type);
             }
 
             return services;
@@ -26,19 +31,9 @@ namespace MoistBot.Models
             if (type.IsAbstract || type.IsInterface)
                 return;
 
-            var eventSourceType = typeof(IEventSource);
+            var eventSourceType = typeof(IMessageSource);
             if (eventSourceType.IsAssignableFrom(type))
-            {
-                var lifetime = type.GetCustomAttribute<LifetimeAttribute>();
-                if (lifetime == null)
-                {
-                    services.AddTransient(eventSourceType, type);
-                }
-                else if (lifetime.LifeTime == ServiceLifeTime.Singleton)
-                {
-                    services.AddSingleton(eventSourceType, type);
-                }
-            }
+                services.AddSingleton(eventSourceType, type);
         }
 
         private static void TryRegisterHandler(this IServiceCollection services, TypeInfo type)
@@ -46,25 +41,23 @@ namespace MoistBot.Models
             if (type.IsAbstract || type.IsInterface)
                 return;
 
-            var handlerType = typeof(IEventHandler<>);
+            var handlerType = typeof(MessageHandler<>);
             var handlerInterface = type.GetInterfaces().FirstOrDefault(x => x.GetGenericTypeDefinition() == handlerType);
             if (handlerInterface != null)
-            {
-                var lifetime = type.GetCustomAttribute<LifetimeAttribute>();
-                if (lifetime == null)
-                {
-                    services.AddTransient(handlerInterface, type);
-                }
-                else if (lifetime.LifeTime == ServiceLifeTime.Singleton)
-                {
-                    var exists = services.Any(x => x.ServiceType == type);
-                    if (exists)
-                    {
-                        services.AddSingleton(handlerInterface, sp => sp.GetService(type));
-                        return;
-                    }
+                services.AddTransient(handlerInterface, type);
+        }
 
-                    services.AddSingleton(handlerInterface, type);
+
+        private static void TryRegisterAction(this IServiceCollection services, TypeInfo type)
+        {
+            if (type.IsAbstract || type.IsInterface)
+                return;
+
+            if (typeof(IAction).IsAssignableFrom(type))
+            {
+                foreach (var i in type.GetInterfaces())
+                {
+                    services.AddTransient(i, type);
                 }
             }
         }

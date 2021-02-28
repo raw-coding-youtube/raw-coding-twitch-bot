@@ -3,7 +3,7 @@ using MoistBot.Models;
 
 namespace RawCoding.Bot.Rules.Twitch
 {
-    public record TwitchMessage(string Message) : Event;
+    public record TwitchMessage(string Message) : Message;
 
     public record ReceivedTwitchMessage(string Channel, string Username, string Message) : TwitchMessage(Message);
 
@@ -11,7 +11,7 @@ namespace RawCoding.Bot.Rules.Twitch
 
     public record SendTwitchPrivateMessage(string Username, string Message) : TwitchMessage(Message);
 
-    public record TwitchFollow(string Username) : Event;
+    public record TwitchFollow(string Username) : Message;
 
     public record TwitchSubscription(
         string UserId,
@@ -20,5 +20,5 @@ namespace RawCoding.Bot.Rules.Twitch
         int TotalMonths,
         int StreakMonths,
         string Context
-    ) : Event;
+    ) : Message;
 }

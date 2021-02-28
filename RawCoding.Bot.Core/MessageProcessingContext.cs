@@ -6,18 +6,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MoistBot.Models
 {
-    public class EventProcessingContext : IEventSink
+    public class MessageProcessingContext : IMessageSink
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly Channel<Event> _eventChannel;
+        private readonly Channel<Message> _eventChannel;
 
-        public EventProcessingContext(IServiceProvider serviceProvider)
+        public MessageProcessingContext(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-            _eventChannel = Channel.CreateUnbounded<Event>();
+            _eventChannel = Channel.CreateUnbounded<Message>();
         }
 
-        public ValueTask Send<T>(T e) where T : Event => _eventChannel.Writer.WriteAsync(e);
+        public ValueTask Send<T>(T e) where T : Message => _eventChannel.Writer.WriteAsync(e);
 
         public async ValueTask Start(CancellationToken cancellationToken)
         {
@@ -29,11 +29,11 @@ namespace MoistBot.Models
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var handlers = scope.ServiceProvider
-                            .GetServices(typeof(ProcessEvent<>).MakeGenericType(e.GetType()));
+                            .GetServices(typeof(MessageHandler<>).MakeGenericType(e.GetType()));
 
                         foreach (var h in handlers)
                         {
-                            await (h as EventHandler).InternalHandle(e);
+                            await (h as MessageHandler).InternalHandle(e);
                         }
                     }
                 }

@@ -2,7 +2,7 @@
 
 namespace MoistBot.Models
 {
-    public record Event
+    public record Message
     {
         public DateTimeOffset Created { get; } = DateTimeOffset.UtcNow;
     }
